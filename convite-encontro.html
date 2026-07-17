@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Uma pergunta pra você</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,300;0,500;0,600;1,500&family=Manrope:wght@400;600;700&display=swap');
+
+  :root{
+    --blush: #f7e6e4;
+    --rose: #e8a5a0;
+    --plum: #5c2a3c;
+    --plum-deep: #3c1a28;
+    --gold: #c9a15a;
+    --paper: #fffaf7;
+  }
+
+  *{ margin:0; padding:0; box-sizing:border-box; }
+
+  body{
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background: radial-gradient(circle at 30% 20%, var(--blush), #f1cfc9 55%, var(--rose) 100%);
+    font-family:'Manrope', sans-serif;
+    color: var(--plum-deep);
+    padding: 24px;
+    overflow-x:hidden;
+    position:relative;
+  }
+
+  /* floating petals */
+  .petal{
+    position:fixed;
+    top:-40px;
+    font-size: 20px;
+    opacity:.55;
+    animation: fall linear infinite;
+    pointer-events:none;
+    z-index:0;
+  }
+  @keyframes fall{
+    to{ transform: translateY(110vh) rotate(360deg); }
+  }
+
+  .card{
+    position:relative;
+    z-index:1;
+    background: var(--paper);
+    border-radius: 28px;
+    padding: 48px 40px;
+    max-width: 440px;
+    width:100%;
+    text-align:center;
+    box-shadow: 0 30px 60px -20px rgba(60,26,40,0.35);
+    border: 1px solid rgba(201,161,90,0.25);
+  }
+
+  .eyebrow{
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  h1{
+    font-family:'Fraunces', serif;
+    font-weight: 500;
+    font-style: italic;
+    font-size: 1.9rem;
+    line-height:1.25;
+    color: var(--plum);
+    margin-bottom: 8px;
+  }
+
+  p.sub{
+    color:#8a5b68;
+    font-size:0.92rem;
+    margin-bottom: 30px;
+  }
+
+  .btn-row{
+    display:flex;
+    justify-content:center;
+    gap:18px;
+    position:relative;
+    height:56px;
+  }
+
+  button{
+    border:none;
+    border-radius: 999px;
+    padding: 14px 32px;
+    font-family:'Manrope', sans-serif;
+    font-weight:700;
+    font-size: 1rem;
+    cursor:pointer;
+    transition: transform .18s ease, box-shadow .18s ease;
+  }
+
+  #btn-sim{
+    background: var(--plum);
+    color: var(--paper);
+    box-shadow: 0 10px 20px -8px rgba(92,42,60,0.6);
+  }
+  #btn-sim:hover{ transform: translateY(-2px) scale(1.03); }
+  #btn-sim:focus-visible, #btn-nao:focus-visible{ outline: 3px solid var(--gold); outline-offset: 3px; }
+
+  #btn-nao{
+    background: transparent;
+    color: var(--plum);
+    border: 2px solid rgba(92,42,60,0.3);
+    position:relative;
+    transition: left .18s ease, top .18s ease, transform .18s ease;
+  }
+
+  .hidden{ display:none !important; }
+
+  .thanks{
+    font-family:'Fraunces', serif;
+    font-style:italic;
+    color: var(--plum);
+    font-size:1.3rem;
+    margin-bottom: 22px;
+    animation: pop .4s ease;
+  }
+  @keyframes pop{ from{ transform: scale(.85); opacity:0;} to{ transform:scale(1); opacity:1; } }
+
+  .form-group{
+    text-align:left;
+    margin-bottom: 16px;
+  }
+
+  label{
+    display:block;
+    font-size: 0.78rem;
+    font-weight:700;
+    letter-spacing:0.03em;
+    color:#8a5b68;
+    margin-bottom:6px;
+  }
+
+  input{
+    width:100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1.5px solid rgba(92,42,60,0.2);
+    background: #fff;
+    font-family:'Manrope', sans-serif;
+    font-size:0.95rem;
+    color: var(--plum-deep);
+    outline:none;
+    transition: border-color .15s ease;
+  }
+  input:focus{ border-color: var(--gold); }
+
+  #btn-enviar{
+    width:100%;
+    margin-top: 8px;
+    background: var(--plum);
+    color: var(--paper);
+  }
+  #btn-enviar:hover{ background: var(--plum-deep); }
+
+  @media (prefers-reduced-motion: reduce){
+    .petal{ animation: none; display:none; }
+    .thanks{ animation:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="card" id="tela-pergunta">
+  <div class="eyebrow">pergunta importante</div>
+  <h1>Quer sair em um encontro comigo?</h1>
+  <p class="sub">É só escolher uma opção aí embaixo 🌹</p>
+  <div class="btn-row">
+    <button id="btn-sim">Sim!</button>
+    <button id="btn-nao">Não</button>
+  </div>
+</div>
+
+<div class="card hidden" id="tela-formulario">
+  <p class="thanks">Sabia que você ia dizer sim ❤️</p>
+  <div class="eyebrow">agora me conta</div>
+  <h1 style="font-size:1.5rem; margin-bottom:24px;">Como vai ser o nosso encontro?</h1>
+
+  <form id="encontro-form">
+    <div class="form-group">
+      <label for="data">Que dia fica melhor pra você?</label>
+      <input type="date" id="data" required>
+    </div>
+    <div class="form-group">
+      <label for="horario">Que horas?</label>
+      <input type="time" id="horario" required>
+    </div>
+    <div class="form-group">
+      <label for="local-destino">Onde você quer ir?</label>
+      <input type="text" id="local-destino" placeholder="Ex: cinema, aquele restaurante..." required>
+    </div>
+    <div class="form-group">
+      <label for="local-busca">Onde eu te pego?</label>
+      <input type="text" id="local-busca" placeholder="Endereço ou referência" required>
+    </div>
+    <button type="submit" id="btn-enviar">Combinado 🚀</button>
+  </form>
+</div>
+
+<script>
+  // pétalas flutuando de fundo
+  const petals = ['🌸','🌹','💌','✨'];
+  for(let i=0;i<14;i++){
+    const p = document.createElement('div');
+    p.className='petal';
+    p.textContent = petals[Math.floor(Math.random()*petals.length)];
+    p.style.left = Math.random()*100 + 'vw';
+    p.style.animationDuration = (6 + Math.random()*6) + 's';
+    p.style.animationDelay = (Math.random()*6) + 's';
+    document.body.appendChild(p);
+  }
+
+  const btnNao = document.getElementById('btn-nao');
+  const btnSim = document.getElementById('btn-sim');
+  const telaPergunta = document.getElementById('tela-pergunta');
+  const telaFormulario = document.getElementById('tela-formulario');
+  const form = document.getElementById('encontro-form');
+
+  function fugir(){
+    const maxX = window.innerWidth - btnNao.offsetWidth - 20;
+    const maxY = window.innerHeight - btnNao.offsetHeight - 20;
+    const novoX = 10 + Math.random() * maxX;
+    const novoY = 10 + Math.random() * maxY;
+
+    btnNao.style.position = 'fixed';
+    btnNao.style.left = novoX + 'px';
+    btnNao.style.top = novoY + 'px';
+  }
+
+  btnNao.addEventListener('mouseover', fugir);
+  btnNao.addEventListener('touchstart', (e) => { e.preventDefault(); fugir(); }, { passive: false });
+
+  btnSim.addEventListener('click', () => {
+    telaPergunta.classList.add('hidden');
+    telaFormulario.classList.remove('hidden');
+  });
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const data = document.getElementById('data').value;
+    const horario = document.getElementById('horario').value;
+    const destino = document.getElementById('local-destino').value;
+    const busca = document.getElementById('local-busca').value;
+
+    const mensagem = [
+      'Encontro combinado! 🌹',
+      '',
+      `Data: ${data}`,
+      `Horário: ${horario}`,
+      `Onde vamos: ${destino}`,
+      `Onde você me busca: ${busca}`
+    ].join('\n');
+
+    const numeroWhatsApp = '5522988330445';
+    const link = `https://wa.me/${numeroWhatsApp}?text=${encodeURIComponent(mensagem)}`;
+
+    alert('Tudo anotado! Mal posso esperar 😍');
+    window.location.href = link;
+  });
+</script>
+</body>
+</html>
