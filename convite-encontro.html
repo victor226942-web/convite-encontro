@@ -166,6 +166,21 @@
   }
   #btn-enviar:hover{ background: var(--plum-deep); }
 
+  .carta-texto{
+    font-size: 0.97rem;
+    line-height: 1.7;
+    color:#6b3b48;
+    margin-bottom: 28px;
+    text-align:left;
+  }
+
+  #btn-continuar{
+    background: var(--plum);
+    color: var(--paper);
+    box-shadow: 0 10px 20px -8px rgba(92,42,60,0.6);
+  }
+  #btn-continuar:hover{ transform: translateY(-2px) scale(1.03); }
+
   @media (prefers-reduced-motion: reduce){
     .petal{ animation: none; display:none; }
     .thanks{ animation:none; }
@@ -174,7 +189,19 @@
 </head>
 <body>
 
-<div class="card" id="tela-pergunta">
+<div class="card" id="tela-carta">
+  <div class="eyebrow">para a Yasmin</div>
+  <h1 style="font-size:1.6rem;">Minha princesa do campo</h1>
+  <p class="carta-texto">
+    Yasmin, você é incrível de um jeito que eu nem sei explicar direito.
+    Minha princesa do campo, minha mulher, minha escolha diária — todo dia eu escolheria
+    você de novo, sem pensar duas vezes. Você ilumina tudo por onde passa e faz até
+    o dia mais simples parecer especial. Obrigado por existir e por ser exatamente quem é. 🌾💐
+  </p>
+  <button id="btn-continuar">Continuar</button>
+</div>
+
+<div class="card hidden" id="tela-pergunta">
   <div class="eyebrow">pergunta importante</div>
   <h1>Quer sair em um encontro comigo?</h1>
   <p class="sub">É só escolher uma opção aí embaixo 🌹</p>
@@ -225,9 +252,16 @@
 
   const btnNao = document.getElementById('btn-nao');
   const btnSim = document.getElementById('btn-sim');
+  const btnContinuar = document.getElementById('btn-continuar');
+  const telaCarta = document.getElementById('tela-carta');
   const telaPergunta = document.getElementById('tela-pergunta');
   const telaFormulario = document.getElementById('tela-formulario');
   const form = document.getElementById('encontro-form');
+
+  btnContinuar.addEventListener('click', () => {
+    telaCarta.classList.add('hidden');
+    telaPergunta.classList.remove('hidden');
+  });
 
   function fugir(){
     const maxX = window.innerWidth - btnNao.offsetWidth - 20;
