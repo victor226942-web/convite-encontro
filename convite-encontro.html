@@ -31,7 +31,6 @@
     position:relative;
   }
 
-  /* floating petals */
   .petal{
     position:fixed;
     top:-40px;
@@ -174,16 +173,110 @@
     text-align:left;
   }
 
-  #btn-continuar{
+  #btn-continuar, #btn-ir-pergunta{
     background: var(--plum);
     color: var(--paper);
     box-shadow: 0 10px 20px -8px rgba(92,42,60,0.6);
   }
-  #btn-continuar:hover{ transform: translateY(-2px) scale(1.03); }
+  #btn-continuar:hover, #btn-ir-pergunta:hover{ transform: translateY(-2px) scale(1.03); }
+
+  /* Tela dos envelopes */
+  #tela-envelopes{
+    position:relative;
+    z-index:1;
+    max-width: 480px;
+    width:100%;
+    text-align:center;
+  }
+
+  #tela-envelopes .eyebrow, #tela-envelopes h1, #tela-envelopes p.sub{
+    color: var(--plum-deep);
+  }
+  #tela-envelopes .eyebrow{ color: var(--plum); }
+  #tela-envelopes h1{ color: var(--plum-deep); text-shadow: 0 2px 12px rgba(255,255,255,0.6); }
+  #tela-envelopes p.sub{ color:#7a3f4c; margin-bottom: 18px; }
+
+  .envelope-field{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+  }
+
+  .envelope{
+    position:absolute;
+    font-size: 34px;
+    cursor:pointer;
+    pointer-events:auto;
+    filter: drop-shadow(0 6px 10px rgba(60,26,40,0.25));
+    animation: drift ease-in-out infinite;
+    transition: transform .2s ease;
+  }
+  .envelope:hover{ transform: scale(1.18) rotate(-6deg); }
+  .envelope.aberto{ opacity: .35; filter: grayscale(.4) drop-shadow(0 6px 10px rgba(60,26,40,0.15)); }
+
+  @keyframes drift{
+    0%   { transform: translate(0,0) rotate(0deg); }
+    25%  { transform: translate(18px,-14px) rotate(4deg); }
+    50%  { transform: translate(-10px,10px) rotate(-3deg); }
+    75%  { transform: translate(14px,16px) rotate(3deg); }
+    100% { transform: translate(0,0) rotate(0deg); }
+  }
+
+  #btn-ir-pergunta{
+    position:relative;
+    z-index:2;
+    margin-top: 10px;
+  }
+
+  /* Modal da carta */
+  .modal-overlay{
+    position:fixed;
+    inset:0;
+    background: rgba(60,26,40,0.55);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding: 24px;
+    z-index: 10;
+  }
+
+  .modal-card{
+    background: var(--paper);
+    border-radius: 24px;
+    padding: 36px 30px;
+    max-width: 460px;
+    width:100%;
+    max-height: 80vh;
+    overflow-y:auto;
+    box-shadow: 0 30px 60px -15px rgba(0,0,0,0.5);
+    animation: pop .3s ease;
+    position:relative;
+  }
+
+  .modal-card .eyebrow{ text-align:center; }
+  .modal-texto{
+    font-family:'Fraunces', serif;
+    font-style: italic;
+    font-size: 1.05rem;
+    line-height: 1.8;
+    color: var(--plum-deep);
+    margin: 14px 0 26px;
+    text-align:left;
+    white-space: pre-line;
+  }
+
+  #btn-fechar-carta{
+    width:100%;
+    background: var(--plum);
+    color: var(--paper);
+  }
+  #btn-fechar-carta:hover{ background: var(--plum-deep); }
 
   @media (prefers-reduced-motion: reduce){
     .petal{ animation: none; display:none; }
     .thanks{ animation:none; }
+    .envelope{ animation:none; }
   }
 </style>
 </head>
@@ -199,6 +292,22 @@
     o dia mais simples parecer especial. Obrigado por existir e por ser exatamente quem é. 🌾💐
   </p>
   <button id="btn-continuar">Continuar</button>
+</div>
+
+<div class="card hidden" id="tela-envelopes">
+  <div class="eyebrow">dez cartas para você</div>
+  <h1 style="font-size:1.5rem;">Escolha um envelope</h1>
+  <p class="sub">Toque em cada carta pra ler. Pode abrir quantas quiser 💌</p>
+  <button id="btn-ir-pergunta">Já li tudo, continuar</button>
+</div>
+<div class="envelope-field hidden" id="campo-envelopes"></div>
+
+<div class="modal-overlay hidden" id="modal-carta">
+  <div class="modal-card">
+    <div class="eyebrow" id="modal-titulo">carta</div>
+    <p class="modal-texto" id="modal-texto"></p>
+    <button id="btn-fechar-carta">Fechar</button>
+  </div>
 </div>
 
 <div class="card hidden" id="tela-pergunta">
@@ -250,16 +359,74 @@
     document.body.appendChild(p);
   }
 
-  const btnNao = document.getElementById('btn-nao');
-  const btnSim = document.getElementById('btn-sim');
-  const btnContinuar = document.getElementById('btn-continuar');
+  const cartas = [
+    "O seu olhar me fascina, me hipnotiza. Seus cabelos cacheados são lindos, eu amo eles. Seu corpo é como uma escultura grega esculpida em mármore de Carrara, você é perfeita. Sua personalidade forte me desafia e você me deixa sem palavras. Seu beijo me dá a sensação de quero mais, é doce, é sexy, é perfeito.",
+    "Meu amor, queria te contar uma coisa que guardei para este momento: você é a primeira mulher da minha vida a receber um buquê de flores meu. Eu escolhi você para ser a primeira; nunca passou pela minha cabeça fazer isso antes, mas você me transformou. Hoje eu faço questão de estar presente, de cuidar e de resolver as coisas por nós.\n\nEu escolhi você porque você é única e mudou tudo o que eu sinto. Não sei explicar direito, mas você me faz querer crescer para te merecer. Às vezes sinto que ainda não te mereço por completo e que não posso te proporcionar tudo o que você merece agora, mas vou trabalhar muito para que isso se torne realidade. Mesmo com a distância, faço questão de que você saiba o quanto é especial e o quanto eu te admiro. Cada pétala dessas flores representa um pouquinho do carinho e do espaço gigante que você ocupa no meu coração. Te amo!",
+    "Passando para causar um pouquinho de delírio por aí também! Um lírio para o meu delírio e rosas para colorir o seu dia e acompanhar essa sua personalidade forte que me fascina. Só para você lembrar, no meio da sua rotina, que meu coração é todo seu e que eu escolhi você para ser a minha primeira e única. Aguenta firme que a distância é temporária, mas o meu amor por você é para sempre. ❤️",
+    "Para o nosso Dia dos Namorados ser completo, mesmo com as cidades nos separando hoje, aqui está o seu presente: um Vale-Pedido sem limites. Você pode me pedir o que quiser, e a minha única missão é realizar. Pensa com carinho no que você vai querer quando a gente estiver junto, porque eu mal posso esperar para te entregar tudo o que você merece.\n\nMas além do vale, o meu verdadeiro presente é poder te admirar. Fico bobo pensando no brilho do seu olhar que me hipnotiza e nesse seu sorriso que ilumina tudo ao seu redor. Você é perfeita, meu amor. Feliz nosso dia! ❤️",
+    "Você achou mesmo que eu não ia te mandar nada hoje? Se bem que eu falei ontem que eu não iria poder mandar nada por conta do tempo, mas eu consegui! Para você, eu sempre tento te dar o melhor que eu posso.\n\nEu fiz questão de fazer isso acontecer porque você é a pessoa mais importante da minha vida. No meio de tanta correria e da distância, você continua sendo o meu melhor presente todos os dias. Eu sou o seu fã número um — admiro sua força, sua personalidade, seu sorriso e tudo o que você é. Obrigado por me transformar e por me fazer querer crescer tanto. Feliz Dia dos Namorados, meu amor! ❤️",
+    "Bom dia, meu amor! Hoje a saudade acordou batendo forte por aqui. Se eu pudesse escolher um superpoder agora, seria o de encurtar esses quilômetros num piscar de olhos só para poder te tocar, te puxar para um abraço daqueles bem demorados e te fazer um carinho até você esquecer do mundo lá fora.\n\nComo ainda não inventaram o teletransporte, deixo aqui o meu desejo para que o seu dia seja super animado, leve e cheio de energia boa. Não se esqueça de colocar aquele seu sorriso lindo no rosto, porque ele muda tudo por aqui, mesmo do outro lado da tela. Te amo e estou contigo em cada pensamento! ❤️",
+    "Oi, meu amor. Tem dias que a distância parece que pesa um pouco mais, e hoje é um daqueles dias em que tudo o que eu queria era o seu corpo perto do meu. Queria poder te abraçar apertado, sentir o seu cheiro, fazer aquele carinho que você gosta e te dar um beijo com calma, sem pressa nenhuma.\n\nSei que a gente não pode fazer isso hoje, mas uso essa saudade como força para continuar correndo atrás do nosso futuro. Que o seu dia seja muito animado, produtivo e cheio de coisas boas. Abre esse sorriso lindo que eu tanto amo e encara o dia com tudo! Estou aqui torcendo por você, sempre. Te amo demais. ❤️",
+    "Passando para te lembrar do quanto eu sou completamente rendido por cada detalhe seu. Fico aqui de longe lembrando do caimento dos seus cabelos cacheados e do poder da sua personalidade forte, que me desafia e me fascina ao mesmo tempo. Você não é uma mulher comum, Yasmin; você é única, marcante e dona do meu melhor sorriso. Tenha um dia incrível, meu amor!",
+    "Oi, minha linda. No meio de toda a correria do dia a dia, das responsabilidades e dos quilômetros que nos separam, pensar em você é o meu momento de paz. Você é o meu porto seguro, a pessoa que transforma qualquer dia tenso em algo leve apenas com uma mensagem ou um áudio. Obrigado por ser minha parceira de vida e por acreditar no nosso futuro tanto quanto eu. Te amo demais!",
+    "Meu amor, toda vez que a saudade aperta, eu olho para frente e lembro do motivo de estar trabalhando e crescendo tanto: nós dois. Eu escolhi você para ser a minha mulher, e essa escolha se renova a cada amanhecer. Posso não conseguir te dar o mundo inteiro hoje, mas estou construindo o caminho para te proporcionar tudo o que você merece. Você é a minha meta, a minha maior motivação e o meu amor para a vida toda. Aguenta firme, logo a gente se abraça!"
+  ];
+
   const telaCarta = document.getElementById('tela-carta');
+  const telaEnvelopes = document.getElementById('tela-envelopes');
+  const campoEnvelopes = document.getElementById('campo-envelopes');
   const telaPergunta = document.getElementById('tela-pergunta');
   const telaFormulario = document.getElementById('tela-formulario');
+  const modalOverlay = document.getElementById('modal-carta');
+  const modalTexto = document.getElementById('modal-texto');
+  const modalTitulo = document.getElementById('modal-titulo');
+  const btnContinuar = document.getElementById('btn-continuar');
+  const btnIrPergunta = document.getElementById('btn-ir-pergunta');
+  const btnFecharCarta = document.getElementById('btn-fechar-carta');
+  const btnNao = document.getElementById('btn-nao');
+  const btnSim = document.getElementById('btn-sim');
   const form = document.getElementById('encontro-form');
 
   btnContinuar.addEventListener('click', () => {
     telaCarta.classList.add('hidden');
+    telaEnvelopes.classList.remove('hidden');
+    campoEnvelopes.classList.remove('hidden');
+    montarEnvelopes();
+  });
+
+  function montarEnvelopes(){
+    campoEnvelopes.innerHTML = '';
+    cartas.forEach((texto, i) => {
+      const env = document.createElement('div');
+      env.className = 'envelope';
+      env.textContent = '💌';
+      env.dataset.index = i;
+      env.style.left = (5 + Math.random() * 85) + 'vw';
+      env.style.top = (8 + Math.random() * 78) + 'vh';
+      env.style.animationDuration = (5 + Math.random() * 5) + 's';
+      env.style.animationDelay = (Math.random() * 3) + 's';
+      env.addEventListener('click', () => abrirCarta(i, env));
+      campoEnvelopes.appendChild(env);
+    });
+  }
+
+  function abrirCarta(i, el){
+    modalTitulo.textContent = 'carta ' + (i + 1) + ' de ' + cartas.length;
+    modalTexto.textContent = cartas[i];
+    modalOverlay.classList.remove('hidden');
+    el.classList.add('aberto');
+  }
+
+  btnFecharCarta.addEventListener('click', () => {
+    modalOverlay.classList.add('hidden');
+  });
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) modalOverlay.classList.add('hidden');
+  });
+
+  btnIrPergunta.addEventListener('click', () => {
+    telaEnvelopes.classList.add('hidden');
+    campoEnvelopes.classList.add('hidden');
     telaPergunta.classList.remove('hidden');
   });
 
